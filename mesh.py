@@ -91,3 +91,13 @@ class Mesh():
         for t in self.T:
             ret = ret + ("f %d %d %d\n" % (t[0]+1, t[1]+1, t[2]+1))
         return ret
+    
+    def print_to_file(self, file_name):
+        f = open(file_name,'w')
+        ret = ""
+        for v in self.V:
+            ret = ret + ("v %f %f %f\n" % (v[0], v[1], v[2]))
+        for t in self.T:
+            ret = ret + ("f %d %d %d\n" % (t[0]+1, t[1]+1, t[2]+1))
+        f.write(ret)
+        f.close()

@@ -3,7 +3,7 @@ import numpy as np
 import scipy.sparse
 from scipy.sparse.linalg import lsmr
 
-m = Mesh("../shell/slice.obj")
+m = Mesh("./shell/slice.obj")
 nboundary = sum(m.boundary)
 
 for dim in range(2): # solve for x first, then for y
@@ -27,3 +27,4 @@ for dim in range(2): # solve for x first, then for y
 
 print(m) # output the deformed mesh
 
+m.print_to_file("test_laplace.obj")
