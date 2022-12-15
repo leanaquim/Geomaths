@@ -1,5 +1,6 @@
 import numpy as np 
 from mesh import Mesh
+import matplotlib.pyplot as plt
 
 model = 'chevron'
 mesh = Mesh(model+"/slice.obj")
@@ -28,8 +29,27 @@ def extract_faults(is_fault):
     #TODO
     return False
 
+def extract_border():
+    borders = []
+    for v in mesh.nverts :
+        if mesh.on_border(v) :
+            borders.append(v)
+            
+    return borders
+
 if __name__ == '__main__' :
-    print(extract_horizons(horizon_id)[0])
+    h0 = extract_horizons(horizon_id)[0] # half-edge indexes
+    list_v = [mesh.org(i) for i in h0]
+    list_y = [mesh.V[i,1] for i in list_v]
+    list_x = [mesh.V[i,0] for i in list_v]
+
+    print(extract_horizons(horizon_id)[1])
+
+    plt.scatter(list_x, list_y)
+    plt.ylim(0,1)
+    plt.show()
+
+    
 
 
 

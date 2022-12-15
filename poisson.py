@@ -62,19 +62,61 @@ def premiers_test_poisson() :
     plt.legend()
     plt.show()
 
+def extract_border(mesh):
+    borders = []
+    for v in range(mesh.nverts) :
+        if mesh.on_border(v) :
+            borders.append(v)
+            
+    return borders
+
+
 def flatten_horizon(mesh, horizon):
     modified_mesh = mesh
-    n = mesh.ncorners
+    nvert = mesh.nverts
+    ncorn = mesh.ncorners
+
+    list_borders = extract_border(mesh)
+    print(list_borders)
+
+    result = [mesh.V[i][1] for i in range(nvert)]
+    list_y = np.zeros(ncorn + len(horizon) + len(list_borders))
+
+    list_y = [[list_y[i]] for i in range(len(list_y))]
+    
     
     # Defining the 'transition' matrix
-    A = np.matrix((n,n))
+    A = np.matrix(np.zeros((ncorn + len(horizon) + len(list_borders), nvert)))
+        
         # Constraints on horizon vertices
-    for i in horizon :
-        A[i,0] = 1 
-        # Constraints on the rest of the mesh (Laplace ?)
-    # TODO
-    
-    # Computing the new mesh
+    y0 = mesh.org(horizon[0]) #first half-edge of the horizon
+            
+    for i in range(ncorn):
+        A[i,mesh.org(i)] = -1
+        A[i,mesh.dst(i)] = 1
+
+    print(A.shape)
+    for e in range(len(horizon)):
+        i = mesh.org(horizon[e])
+#        j = mesh.dst(horizon[e])
+        if y0==i: continue
+
+        A[ncorn + e, y0] = 1*100
+        A[ncorn + e, i] = -1*100
+        list_y[ncorn + len(horizon) + e][0] = 0*100
+
+    for i in range(len(list_borders)):
+        A[ncorn + len(horizon) + i, list_borders[i]] = 1*10
+        list_y[ncorn + len(horizon) + i][0] = mesh.V[list_borders[i]][1]*10
+
+
+    result = (np.linalg.inv(A.T*A)*(A.T)*list_y).T.tolist()[0]
+
+    for i in range(nvert) :
+        modified_mesh.V[i,1] = result[i]
+
+    for i in list_borders:
+        modified_mesh.V[i,2] = .1
 
 
     modified_mesh.print_to_file('chevron/modified_mesh.obj')
@@ -91,5 +133,16 @@ if __name__ == '__main__' :
     7017, 7035, 7059, 7074, 7095, 7101, 7110, 7122, 7140, 7152, 7182, 7200, 7218, 7230, 7242, 7266, 7281,
     7293, 7308, 7329, 7359, 7377, 7404, 7413, 7428, 7437, 7563, 7575, 9084, 9621, 10002, 10692]
 
-    flatten_horizon(mesh, horizon)
+    horizon1 = [90, 93, 152, 159, 164, 170, 174, 200, 207, 217, 1206, 1242, 1477, 1512, 1539, 1599, 1608,
+    1653, 1659, 1671, 1695, 1707, 1716, 1726, 1737, 1746, 1749, 1752, 1767, 1770, 1773, 1779, 1794, 1800,
+    1819, 1828, 1830, 1836, 1843, 1845, 1848, 1851, 1860, 1872, 1881, 1896, 1902, 1917, 1923, 1929, 1938,
+    1941, 1948, 1953, 1962, 1965, 1977, 1986, 1995, 2004, 2013, 2022, 2031, 2040, 2049, 2058, 2067, 2076,
+    2091, 3963, 3981, 3999, 4014, 4029, 4038, 4062, 4080, 4098, 4116, 4128, 4143, 4158, 4170, 4188, 4203,
+    4218, 4233, 4245, 4257, 4287, 4299, 4326, 4341, 4362, 4389, 4401, 4467, 4902, 4953, 5010, 5019, 5022,
+    5031, 5040, 5052, 5058, 5262, 5268, 5274, 5283, 5358, 5382, 5391, 5403, 5412, 5610, 5625, 5640, 5655,
+    5667, 5676, 5685, 5694, 5703, 5712, 5721, 5730, 5742]
+
+
+    # print(extract_border(mesh))
+    flatten_horizon(mesh, horizon1)
     
