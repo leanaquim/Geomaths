@@ -29,13 +29,7 @@ def extract_faults(is_fault):
     #TODO
     return False
 
-def extract_border():
-    borders = []
-    for v in mesh.nverts :
-        if mesh.on_border(v) :
-            borders.append(v)
-            
-    return borders
+
 
 if __name__ == '__main__' :
     h0 = extract_horizons(horizon_id)[0] # half-edge indexes
