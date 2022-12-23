@@ -28,6 +28,9 @@ def extract_horizons(mesh, horizon_id):
 
 
 def extract_faults(mesh, is_fault):
+    """
+
+    """
     ncorn = mesh.ncorners
     nb_faults = count_nb_faults(mesh, is_fault)
     fault_list = [[] for _ in range(nb_faults)]
@@ -54,10 +57,13 @@ def extract_faults(mesh, is_fault):
 
 
 def rec_count(mesh, halfedge, nb_faults, is_fault, tag):
+    """
+    Counts the number of faults present in the mesh
+    """
     next_halfedge = mesh.opposite(mesh.prev(mesh.opposite(halfedge)))
     if is_fault[next_halfedge]:
         tag[next_halfedge] = nb_faults
-        rec_count(mesh, next_halfedge, nb_faults, tag)
+        rec_count(mesh, next_halfedge, nb_faults, is_fault, tag)
     else :
         tag[next_halfedge] = -1
 
@@ -90,6 +96,9 @@ if __name__ == '__main__' :
     # flatten('shell', Mesh("shell/slice.obj"), horizon_id_shell)
 
     #print(extract_faults(Mesh("ifp2/slice.obj"), is_fault_ifp2))
-    fault_list = extract_faults(Mesh("ifp2/slice.obj"), is_fault_ifp2)
-    print([len(fault_list[i]) for i in range(len(fault_list))])
+    # fault_list = extract_faults(Mesh("ifp2/slice.obj"), is_fault_ifp2)
+    # print([len(fault_list[i]) for i in range(len(fault_list))])
     # Probleme : 216 fois la meme liste...
+
+    print(poisson.extract_faults(Mesh('ifp2/slice.obj'), is_fault_ifp2))
+    poisson.flatten_fault('ifp2', Mesh('ifp2/slice.obj'), is_fault_ifp2)
