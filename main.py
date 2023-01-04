@@ -83,22 +83,23 @@ def count_nb_faults(mesh, is_fault):
     return nb_faults
 
 
-def flatten(model, mesh, horizon_id):
+def flatten(model, mesh, horizon_id, is_fault):
     horizon_list = extract_horizons(mesh, horizon_id)
     poisson.flatten_horizons(model, mesh, horizon_list)
+    poisson.flatten_faults(model, mesh, is_fault)
 
 
 if __name__ == '__main__' :
     
-    # flatten('chevron', Mesh("chevron/slice.obj"), horizon_id_chevron)
-    # flatten('ifp1', Mesh("ifp1/slice.obj"), horizon_id_ifp1)
-    # flatten('ifp2', Mesh("ifp2/slice.obj"), horizon_id_ifp2)
-    # flatten('shell', Mesh("shell/slice.obj"), horizon_id_shell)
+    # flatten('chevron', Mesh("chevron/slice.obj"), horizon_id_chevron, is_fault_chevron)
+    # flatten('ifp1', Mesh("ifp1/slice.obj"), horizon_id_ifp1, is_fault_ifp1)
+    flatten('ifp2', Mesh("ifp2/slice.obj"), horizon_id_ifp2, is_fault_ifp2)
+    # flatten('shell', Mesh("shell/slice.obj"), horizon_id_shell, is_fault_shell)
 
-    #print(extract_faults(Mesh("ifp2/slice.obj"), is_fault_ifp2))
+    # print(extract_faults(Mesh("ifp2/slice.obj"), is_fault_ifp2))
     # fault_list = extract_faults(Mesh("ifp2/slice.obj"), is_fault_ifp2)
     # print([len(fault_list[i]) for i in range(len(fault_list))])
     # Probleme : 216 fois la meme liste...
 
-    print(poisson.extract_faults(Mesh('ifp2/slice.obj'), is_fault_ifp2))
-    poisson.flatten_fault('ifp2', Mesh('ifp2/slice.obj'), is_fault_ifp2)
+    # print(poisson.extract_faults(Mesh('ifp2/slice.obj'), is_fault_ifp2))
+    # poisson.flatten_fault('ifp2', Mesh('ifp2/slice.obj'), is_fault_ifp2)

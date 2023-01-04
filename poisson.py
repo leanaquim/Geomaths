@@ -113,7 +113,7 @@ def flatten_horizons(model, mesh, horizon_list):
     result = (np.linalg.inv(A.T*A)*(A.T)*list_y).T.tolist()[0]
 
     # edit mesh
-    for i in range(nvert) :
+    for i in range(nvert):
         modified_mesh.V[i,1] = result[i]
 
     for i in list_borders:
@@ -122,11 +122,41 @@ def flatten_horizons(model, mesh, horizon_list):
     modified_mesh.print_to_file(model + '/slice_horizons.obj')
 
 
-def flatten_fault(model, mesh, is_fault):
-    list_faults = extract_faults(mesh, is_fault)
+def flatten_faults(model, mesh, is_fault):
     modified_mesh = mesh
+    list_borders = extract_border(mesh)
+    nvert = mesh.nverts
+    ncorn = mesh.ncorners
+    nborders = len(list_borders)
+    
+    list_y = np.zeros(ncorn + nborders)
+    list_y = [[list_y[i]] for i in range(len(list_y))]
+    
+    # Defining the 'transition' matrix
+    A = np.matrix(np.zeros((ncorn + nborders, nvert)))
+    
+        # Laplace
+    for i in range(ncorn):
+        A[i,mesh.org(i)] = -1
+        A[i,mesh.dst(i)] = 1
 
-    for i in list_faults:
+        #  fix borders
+    for i in range(len(list_borders)):
+        A[ncorn + i, list_borders[i]] = 1*100
+        list_y[ncorn + i][0] = mesh.V[list_borders[i]][1]*100
+        
+        # faults
+    # TODO
+
+    # compute
+    result = np.empty(nvert)
+    result = (np.linalg.inv(A.T*A)*(A.T)*list_y).T.tolist()[0]
+
+    # edit mesh
+    for i in range(nvert):
+        modified_mesh.V[i,1] = result[i]
+
+    for i in list_borders:
         modified_mesh.V[i,2] = .1
 
     modified_mesh.print_to_file(model + '/slice_faults.obj')
