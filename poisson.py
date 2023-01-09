@@ -13,13 +13,54 @@ def extract_border(mesh):
     return borders
 
 def extract_faults(mesh, is_fault):
-    faults = []
-    for v in range(mesh.nverts) :
-        if is_fault[v] :
-            faults.append(mesh.org(v))
-            faults.append(mesh.dst(v))
+    nvert = mesh.nverts
+    nb_faults = 0
+    fault_list = [] # list of corners in each fault
+    tag = [-1 for i in range(mesh.ncorners)]
+
+    for half_edge in range(nvert): 
+        if is_fault[half_edge] :
             
-    return faults
+            if tag[mesh.org(half_edge)] != -1  or tag[mesh.dst(half_edge)] != -1 :
+                # if the halfedge links two faults : fusionner failles
+                if tag[mesh.org(half_edge)] != -1 and tag[mesh.dst(half_edge)] != -1 :
+                    nb_faults += 1 # create a new fault constituted by the two previous ones
+
+                    fault_number1 = tag[mesh.org(half_edge)]
+                    fault_number2 = tag[mesh.dst(half_edge)]
+                    
+                    for corner in fault_list[fault_number1 - 1] :
+                        tag[corner] = nb_faults
+
+                    for corner in fault_list[fault_number2 - 1] :
+                        tag[corner] = nb_faults
+
+                    fault_list.append([])
+                    fault_list[nb_faults - 1] = fault_list[fault_number1 - 1] + fault_list[fault_number2 - 1]
+                    fault_list[fault_number1 - 1] = []
+                    fault_list[fault_number2 - 1] = []
+
+                # fault already known -> add the corner to the fault
+                elif tag[mesh.org(half_edge)] != -1 :
+                    fault_number = tag[mesh.org(half_edge)]
+                    fault_list[fault_number - 1].append(mesh.dst(half_edge))
+
+                elif tag[mesh.dst(half_edge)] != -1 :
+                    fault_number = tag[mesh.dst(half_edge)]
+                    fault_list[fault_number - 1].append(mesh.org(half_edge))
+
+            else :
+                nb_faults += 1
+                fault_list.append([])
+            
+            fault_list[nb_faults - 1].append(mesh.org(half_edge))
+
+            tag[mesh.org(half_edge)] = nb_faults # tag the two corners linked by the current halfedge
+            tag[mesh.dst(half_edge)] = nb_faults
+
+    fault_list = [fault_list[i] for i in range (len(fault_list)) if fault_list[i] != []]
+    print("Nb de failles trouvées : ", len(fault_list))
+    return fault_list
 
 def flatten_horizon(mesh, horizon):
     modified_mesh = mesh
@@ -123,11 +164,53 @@ def flatten_horizons(model, mesh, horizon_list):
 
 
 def flatten_fault(model, mesh, is_fault):
-    list_faults = extract_faults(mesh, is_fault)
     modified_mesh = mesh
 
-    for i in list_faults:
-        modified_mesh.V[i,2] = .1
+    list_borders = extract_border(mesh)
+    list_faults = extract_faults(mesh, is_fault)
+    
+    nvert = mesh.nverts
+    ncorn = mesh.ncorners
+    nborders = len(list_borders)
+    nfaults = len(list_faults)                         #############
+    
+    list_x = np.zeros(ncorn + nfaults + nborders)
+    list_x = [[list_x[i]] for i in range(len(list_x))]
+    
+    # Defining the 'transition' matrix
+    A = np.matrix(np.zeros((ncorn + nfaults + nborders, nvert)))
+    
+        # Laplace
+    for i in range(ncorn):
+        A[i,mesh.org(i)] = -1*1
+        A[i,mesh.dst(i)] = 1*1
+
+        #  fix borders
+    for i in range(len(list_borders)):
+        A[ncorn + i, list_borders[i]] = 1*1
+        list_x[ncorn + i][0] = mesh.V[list_borders[i]][0]*1
+        
+        # faults
+   
+    for i in range(len(is_fault)) :
+        if is_fault[i] :
+            # Half-edge i = fault
+            A[i,mesh.org(i)] = -100
+            A[i,mesh.dst(i)] = 100
+
+
+
+    # compute
+    result = np.empty(nvert)
+    result = (np.linalg.inv(A.T*A)*(A.T)*list_x).T.tolist()[0]
+
+    # edit mesh
+    for i in range(nvert) :
+        modified_mesh.V[i,0] = result[i]
+
+    for i in range(len(list_faults)):
+        for j in list_faults[i] :
+            modified_mesh.V[j,2] = i * 0.01
 
     modified_mesh.print_to_file(model + '/slice_faults.obj')
     
