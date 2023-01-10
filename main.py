@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import poisson
 
 from chevron_attributes import horizon_id_chevron
-from ifp1_attributes import horizon_id_ifp1, is_fault_ifp1
+from ifp1_attributes import horizon_id_ifp1, is_fault_ifp1, fault_opposite_ifp1
 from ifp2_attributes import horizon_id_ifp2, is_fault_ifp2
 from shell_attributes import horizon_id_shell
 
@@ -125,15 +125,16 @@ def count_nb_faults(mesh, is_fault):
     return nb_faults
 
 
-def flatten(model, mesh, horizon_id):
+def flatten(model, mesh, horizon_id, is_fault, fault_opposite):
     horizon_list = extract_horizons(mesh, horizon_id)
-    poisson.flatten_horizons(model, mesh, horizon_list)
+    mesh = poisson.flatten_horizons(model, mesh, horizon_list)
+    poisson.flatten_fault(model, mesh, is_fault, fault_opposite)
 
 
 if __name__ == '__main__' :
     
     # flatten('chevron', Mesh("chevron/slice.obj"), horizon_id_chevron)
-    # flatten('ifp1', Mesh("ifp1/slice.obj"), horizon_id_ifp1)
+    flatten('ifp1', Mesh("ifp1/slice.obj"), horizon_id_ifp1, is_fault_ifp1, fault_opposite_ifp1)
     # flatten('ifp2', Mesh("ifp2/slice.obj"), horizon_id_ifp2)
     # flatten('shell', Mesh("shell/slice.obj"), horizon_id_shell)
 
@@ -144,5 +145,5 @@ if __name__ == '__main__' :
 
     # faults_ifp2 = extract_faults(Mesh('ifp2/slice.obj'), is_fault_ifp2)
     # print(len(faults_ifp2))
-    poisson.flatten_fault('ifp1', Mesh('ifp1/slice_horizons.obj'), is_fault_ifp1)
+    # poisson.flatten_fault('ifp1', Mesh('ifp1/slice_horizons.obj'), is_fault_ifp1)
     # print(count_nb_faults(Mesh('ifp2/slice.obj'), is_fault_ifp2))
