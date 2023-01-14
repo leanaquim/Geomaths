@@ -1,8 +1,5 @@
-import numpy as np 
 from mesh import Mesh
-import matplotlib.pyplot as plt
 import lsmr
-
 import chevron.attributes as chevron
 import ifp1.attributes as ifp1
 import ifp2.attributes as ifp2

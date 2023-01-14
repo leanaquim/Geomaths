@@ -30,7 +30,6 @@ def flatten_horizons(model, mesh, horizon_list):
         A[i,mesh.dst(i)] = 1
         list_y[i][0] = mesh.V[mesh.dst(i)][1] - mesh.V[mesh.org(i)][1]
 
-        
         # horizon
     nb_lines_hor = 0
     for hor in range(nb_horizons):
