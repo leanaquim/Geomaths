@@ -28,12 +28,8 @@ def flatten_horizons(model, mesh, horizon_list):
     for i in range(ncorn):
         A[i,mesh.org(i)] = -1
         A[i,mesh.dst(i)] = 1
-        list_y[i][0] = mesh.V[mesh.dst(i)][0] - mesh.V[mesh.org(i)][0]
+        list_y[i][0] = mesh.V[mesh.dst(i)][1] - mesh.V[mesh.org(i)][1]
 
-        #  fix borders
-    for i in range(len(list_borders)):
-        A[ncorn + i, list_borders[i]] = 1*1
-        list_y[ncorn + i][0] = mesh.V[list_borders[i]][1]*1
         
         # horizon
     nb_lines_hor = 0
@@ -70,23 +66,9 @@ def flatten_fault(model, mesh, is_fault, fault_opposite):
     ncorn = mesh.ncorners
     nborders = len(list_borders)
     
-    list_y = np.zeros(ncorn + nborders)
-    list_y = [[list_y[i]] for i in range(len(list_y))]
-    
-    # Defining the 'transition' matrix
-    A = np.matrix(np.zeros((ncorn + nborders, nvert)))
-    
-        # Laplace
-    for i in range(ncorn):
-        A[i,mesh.org(i)] = -1
-        A[i,mesh.dst(i)] = 1
-    
-    nvert = mesh.nverts
-    ncorn = mesh.ncorners
-    nborders = len(list_borders)
-    
     list_x = np.zeros(2 * ncorn + nborders)
     list_x = [[list_x[i]] for i in range(len(list_x))]
+
     
     # Defining the 'transition' matrix
     A = scipy.sparse.lil_matrix((2 * ncorn + nborders, nvert))
@@ -97,11 +79,6 @@ def flatten_fault(model, mesh, is_fault, fault_opposite):
         A[i,mesh.dst(i)] = 1
         list_x[i][0] = mesh.V[mesh.dst(i)][0] - mesh.V[mesh.org(i)][0]
 
-        #  fix borders
-    for i in range(nborders):
-        if not is_fault[i] :
-            A[ncorn + i, list_borders[i]] = 1*1
-            list_x[ncorn + i][0] = mesh.V[list_borders[i]][0]*1
 
         # verticalize faults
     for i in range(ncorn) :
@@ -113,8 +90,8 @@ def flatten_fault(model, mesh, is_fault, fault_opposite):
         # Join the two sides of the faults
     for i in range(ncorn) :
         if is_fault[i] :
-            A[ncorn + nborders + i, mesh.org(i)] = -1*2
-            A[ncorn + nborders + i, mesh.dst(fault_opposite[i])] = 1*2
+            A[ncorn + nborders + i, mesh.org(i)] = -1*1
+            A[ncorn + nborders + i, mesh.dst(fault_opposite[i])] = 1*1
 
     # compute
     A = A.tocsr()
