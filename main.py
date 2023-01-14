@@ -1,23 +1,13 @@
-import numpy as np 
 from mesh import Mesh
-import matplotlib.pyplot as plt
-import poisson
+import lsmr
+import chevron.attributes as chevron
+import ifp1.attributes as ifp1
+import ifp2.attributes as ifp2
+import shell.attributes as shell
 
-model = 'ifp1'
-mesh = Mesh(model+"/slice.obj")
-
-from ifp1_attributes import horizon_id, is_fault, fault_opposite
-
-nb_vertices = mesh.ncorners
-
-# Stores the indexes of the vertices of faults/horizons
-def extract_horizons(horizon_id):
-    """
-    \param horizon_id list of horizons computed in the attributes file
-    
-    Extracts the list of horizons of the model.
-    For each horizon found, it stores the index of all half-edges constituing the horizons (line number in the slice.obj file)
-    """
+# Stores the indexes of the vertices of horizons
+def extract_horizons(mesh, horizon_id):
+    nb_vertices = mesh.ncorners
     nb_horizons = max(horizon_id) + 1
     horizon_list = [[] for _ in range(nb_horizons)]
     for hor in range(nb_horizons):
@@ -26,32 +16,16 @@ def extract_horizons(horizon_id):
                 horizon_list[hor].append(vertex)
     return horizon_list
 
-def extract_faults(is_fault):
-    #TODO
-    return False
+# Main function
+def flatten(model, mesh, horizon_id, is_fault, fault_opposite):
+    horizon_list = extract_horizons(mesh, horizon_id)
+    mesh = lsmr.flatten_horizons(model, mesh, horizon_list)
+    lsmr.flatten_fault(model, mesh, is_fault, fault_opposite)
 
-def main(mesh, horizon_id):
-    horizon_list = extract_horizons(horizon_id)
-    poisson.flatten_horizons(mesh, horizon_list)
 
 if __name__ == '__main__' :
-    h0 = extract_horizons(horizon_id)[0] # half-edge indexes
-    list_v = [mesh.org(i) for i in h0]
-    list_y = [mesh.V[i,1] for i in list_v]
-    list_x = [mesh.V[i,0] for i in list_v]
-
-    # print(extract_horizons(horizon_id)[1])
-
-    # plt.scatter(list_x, list_y)
-    # plt.ylim(0,1)
-    # plt.show()
     
-    main(mesh, horizon_id)
-    
-    main('ifp1', mesh, horizon_id)
-
-    
-
-
-
-        
+    flatten('chevron', Mesh("chevron/slice.obj"), chevron.horizon_id, chevron.is_fault, chevron.fault_opposite)
+    flatten('ifp1', Mesh("ifp1/slice.obj"), ifp1.horizon_id, ifp1.is_fault, ifp1.fault_opposite)
+    flatten('ifp2', Mesh("ifp2/slice.obj"), ifp2.horizon_id, ifp2.is_fault, ifp2.fault_opposite)
+    flatten('shell', Mesh("shell/slice.obj"), shell.horizon_id, shell.is_fault, shell.fault_opposite)
