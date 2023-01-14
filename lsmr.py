@@ -50,7 +50,7 @@ def flatten_horizons(model, mesh, horizon_list):
 
     # Accentuate the borders for visualisation
     for i in list_borders:
-        modified_mesh.V[i,2] = .05
+        modified_mesh.V[i,2] = .0
 
     # edit mesh
     for i in range(nvert):
@@ -99,7 +99,7 @@ def flatten_fault(model, mesh, is_fault, fault_opposite):
 
     # Accentuate the borders for visualization
     for i in list_borders:
-        modified_mesh.V[i,2] = .05
+        modified_mesh.V[i,2] = .0
 
     # edit mesh
     for i in range(nvert) :
